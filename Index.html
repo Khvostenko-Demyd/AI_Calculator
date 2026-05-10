@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ultimate Calculator</title>
+    <style>
+        :root {
+            --bg: #222;
+            --calc: #333;
+            --disp: #eee;
+            --text: #000;
+            --btn: #eee;
+            --acc: #ff9500;
+            --brd: none;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: var(--bg);
+            margin: 0;
+            font-family: sans-serif;
+            transition: 0.4s;
+            overflow: hidden;
+        }
+
+        /* ТУТ БУЛА ПОМИЛКА: тепер корпус один */
+        .calculator {
+            width: 320px;
+            background: var(--calc);
+            padding: 20px;
+            border-radius: 15px;
+            border: var(--brd);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            position: relative;
+            z-index: 10;
+        }
+
+        #clock {
+            color: #888;
+            font-size: 12px;
+            font-family: monospace;
+            height: 15px;
+            margin-bottom: 5px;
+            padding-left: 5px;
+        }
+
+        #display {
+            width: 100%;
+            height: 60px;
+            font-size: 20px;
+            text-align: right;
+            margin-bottom: 15px;
+            background: var(--disp);
+            color: var(--text);
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 8px;
+            background: var(--btn);
+            color: var(--text);
+            border: var(--brd);
+            transition: 0.2s;
+        }
+
+        .btn-op {
+            background: var(--acc);
+            color: white;
+        }
+
+        .btn-game {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-cmd {
+            background: #5352ed;
+            color: white;
+        }
+
+        /* Панель дизайну */
+        .panel {
+            position: fixed;
+            left: -260px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 220px;
+            background: #444;
+            color: white;
+            padding: 15px;
+            transition: 0.5s;
+            border-radius: 0 15px 15px 0;
+            z-index: 1000;
+        }
+
+        .panel.open {
+            left: 0;
+        }
+
+        .panel-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .panel-grid button {
+            background: #555;
+            color: white;
+            border: none;
+            font-size: 14px;
+            padding: 10px;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #666;
+            margin: 15px 0;
+        }
+
+        /* Таймер */
+        .timer-wheels {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .wheel-box {
+            background: #222;
+            color: var(--acc);
+            padding: 3px;
+            border-radius: 3px;
+            text-align: center;
+            width: 35px;
+            border: 1px solid #444;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        .wheel-box span {
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        .wheel-box p {
+            font-size: 7px;
+            margin: 0;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        #wheel-s {
+            width: 35px;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #wheel-s.hidden {
+            width: 0;
+            padding: 0;
+            margin: 0;
+            border: none;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .wheel-box:hover {
+            background: #333;
+            border-color: var(--acc);
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            25% {
+                transform: translate(5px, 5px);
+            }
+
+            50% {
+                transform: translate(-5px, -5px);
+            }
+
+            75% {
+                transform: translate(5px, -5px);
+            }
+
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+
+        .shake-it {
+            animation: shake 0.2s infinite;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="side-panel" class="panel">
+        <h3 style="text-align:center; font-size:12px;">SCIENTIFIC</h3>
+        <div class="panel-grid">
+            <button onclick="scientific('sqrt')">√</button>
+            <button onclick="scientific('pow')">x²</button>
+            <button onclick="memAction('M+')">M+</button>
+            <button onclick="memAction('MRC')">MRC</button>
+        </div>
+        <hr>
+        <h3 style="text-align:center; font-size:12px;">DESIGN</h3>
+        <div class="panel-grid">
+            <button onclick="setTheme('blue')">🔵</button>
+            <button onclick="setTheme('yellow')">🟡</button>
+            <button onclick="setTheme('matrix')">📟</button>
+            <button onclick="setTheme('retro')">💾</button>
+            <button onclick="setTheme('default')">🔄</button>
+            <button onclick="resetAllModes()" style="background:#ff4757; font-size:10px;">OFF G!</button>
+        </div>
+    </div>
+
+    <div class="calculator">
+        <!-- Регулятори таймера -->
+        <div id="timer-controls" class="timer-wheels">
+            <div class="wheel-box" onclick="adjTime('h')"><span>0</span>
+                <p>H</p>
+            </div>
+            <div class="wheel-box" onclick="adjTime('m')"><span>0</span>
+                <p>M</p>
+            </div>
+            <div class="wheel-box" id="wheel-s" onclick="adjTime('s')"><span>0</span>
+                <p>S</p>
+            </div>
+        </div>
+
+        <div id="clock">00:00:00</div>
+        <div style="position: relative;">
+            <span id="mem-indicator"
+                style="position: absolute; left: 8px; top: 5px; font-size: 10px; font-family: monospace; color: #888; visibility: hidden;">M</span>
+            <input type="text" id="display" readonly value="0">
+        </div>
+        <div class="buttons">
+            <button onclick="handleC()">C</button>
+            <button class="btn-game" onclick="handleG()">G!</button>
+            <button onclick="handleDel()">DEL</button>
+            <button class="btn-op" onclick="add('/')">/</button>
+
+            <button onclick="add('7')">7</button>
+            <button onclick="add('8')">8</button>
+            <button onclick="add('9')">9</button>
+            <button class="btn-op" onclick="add('*')">*</button>
+
+            <button onclick="add('4')">4</button>
+            <button onclick="add('5')">5</button>
+            <button onclick="add('6')">6</button>
+            <button class="btn-op" onclick="add('-')">-</button>
+
+            <button onclick="add('1')">1</button>
+            <button onclick="add('2')">2</button>
+            <button onclick="add('3')">3</button>
+            <button class="btn-op" onclick="add('+')">+</button>
+
+            <button onclick="add('0')">0</button>
+            <button class="btn-cmd" onclick="handleCmdBtn()">⌘</button>
+            <button onclick="add('.')">.</button>
+            <button class="btn-op" onclick="exec()">=</button>
+        </div>
+    </div>
+
+    <script>
+        const screen = document.getElementById('display');
+        const clockEl = document.getElementById('clock');
+        let isOff = false, isGameMode = false, lastRes = null, memory = 0;
+        let tH = 0, tM = 0, tS = 0, timerInterval = null;
+
+        function updateClock() {
+            if (isOff) { clockEl.innerText = ""; return; }
+            const now = new Date();
+            clockEl.innerText = now.toLocaleTimeString('uk-UA');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function add(c) {
+            if (isOff) return;
+            lastRes = null;
+            if (screen.value === "⌘" && c === "5") { document.getElementById('side-panel').classList.toggle('open'); screen.value = "0"; return; }
+            if (screen.value === "⌘" && c === "2") { screen.value = "SET TIMER"; return; }
+            if (screen.value === "⌘" && c === "-") { document.getElementById('wheel-s').classList.toggle('hidden'); screen.value = "0"; return; }
+
+            if (screen.value === "0" || screen.value === "⌘" || screen.value.includes("MODE") || screen.value.includes("G!")) {
+                screen.value = c;
+            } else {
+                screen.value += c;
+            }
+        }
+
+        function adjTime(type) {
+            if (isOff) return;
+            if (type === 'h') tH = (tH + 1) % 24;
+            if (type === 'm') tM = (tM + 1) % 60;
+            if (type === 's') tS = (tS + 5) % 60;
+            updateWheels();
+        }
+
+        function updateWheels() {
+            document.querySelectorAll('.wheel-box span')[0].innerText = tH;
+            document.querySelectorAll('.wheel-box span')[1].innerText = tM;
+            document.querySelectorAll('.wheel-box span')[2].innerText = tS;
+        }
+
+        function handleCmdBtn() { if (!isOff) screen.value = "⌘"; }
+        function handleDel() { if (!isOff) screen.value = screen.value.slice(0, -1) || "0"; }
+
+        function handleC() {
+    const memInd = document.getElementById('mem-indicator');
+    
+    if (screen.value === "⌘") {
+        // Вимкнення
+        isOff = true;
+        isGameMode = false;
+        screen.value = "";
+        screen.style.background = "#111";
+        if (memInd) memInd.style.visibility = "hidden"; // Ховаємо M
+    } else {
+        // Увімкнення / Скидання
+        isOff = false;
+        screen.value = "0";
+        screen.style.background = "var(--disp)";
+        if (memInd) memInd.style.visibility = "visible"; // Показуємо M
+    }
+    updateClock();
+}
+
+
+        function handleG() {
+            if (isOff) return;
+            const cur = screen.value;
+            if (cur === "1-1") {
+                if (!isGameMode) screen.value = "FIRST TRY 1+1 G!";
+                else { screen.value = "GAME MODE OFF"; isGameMode = false; }
+            } else if (cur === "1+1") {
+                if (isGameMode) screen.value = "ISN'T A COMMAND";
+                else { screen.value = "GAME MODE ON!"; isGameMode = true; }
+            } else { screen.value = "PRESS G! KEY"; }
+            setTimeout(() => { if (screen.value.includes("MODE") || screen.value.includes("KEY")) screen.value = (cur === "1-1" || cur === "1+1") ? cur : "0"; }, 1500);
+        }
+
+        function exec() {
+            if (isOff) return;
+            if (tH > 0 || tM > 0 || tS > 0) { startTimer(); return; }
+            try {
+                if (isGameMode && lastRes !== null && screen.value == lastRes) {
+                    lastRes = Number(lastRes) + 1; screen.value = lastRes; return;
+                }
+                let res = eval(screen.value); lastRes = res; screen.value = res;
+            } catch { screen.value = "Error"; }
+        }
+
+        function updateWheels() {
+            // Находим все спаны внутри колес и обновляем их
+            const wheels = document.querySelectorAll('.wheel-box span');
+            if (wheels.length >= 3) {
+                wheels[0].innerText = tH;
+                wheels[1].innerText = tM;
+                wheels[2].innerText = tS;
+            }
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            let total = tH * 3600 + tM * 60 + tS;
+            if (total <= 0) return;
+
+            timerInterval = setInterval(() => {
+                total--;
+
+                // Расчет времени для отображения
+                let h = Math.floor(total / 3600);
+                let m = Math.floor((total % 3600) / 60);
+                let s = total % 60;
+
+                // Обновляем маленькие окошки
+                tH = h; tM = m; tS = s;
+                updateWheels();
+
+                // Обновляем главный экран
+                screen.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+                if (total <= 0) {
+                    clearInterval(timerInterval);
+                    timeIsUpEffect();
+                }
+            }, 1000);
+        }
+
+        function timeIsUpEffect() {
+            const calc = document.querySelector('.calculator');
+            screen.value = "TIME IS UP!";
+
+            let count = 0;
+            const alarm = setInterval(() => {
+                // Мигаем цветом текста и фона
+                screen.style.backgroundColor = (screen.style.backgroundColor === 'red') ? 'var(--disp)' : 'red';
+                screen.style.color = (screen.style.color === 'white') ? 'var(--text)' : 'white';
+
+                count++;
+                if (count > 10) { // 5 секунд мигания
+                    clearInterval(alarm);
+                    calc.classList.remove('shake-it');
+                    screen.style.backgroundColor = 'var(--disp)';
+                    screen.style.color = 'var(--text)';
+                    screen.value = "0";
+                    tH = 0; tM = 0; tS = 0;
+                    updateWheels();
+                }
+            }, 200);
+        }
+
+        // ПЕРЕПИСАННЫЙ EXEC (кнопка =)
+        function exec() {
+            if (isOff) return;
+
+            // Если в окошках есть время — запускаем таймер
+            if (tH > 0 || tM > 0 || tS > 0) {
+                startTimer();
+            } else {
+                // Иначе — обычные вычисления
+                try {
+                    if (isGameMode && lastRes !== null && screen.value == lastRes) {
+                        lastRes = Number(lastRes) + 1;
+                        screen.value = lastRes;
+                        return;
+                    }
+                    let res = eval(screen.value);
+                    lastRes = res;
+                    screen.value = res;
+                } catch {
+                    screen.value = "Error";
+                }
+            }
+        }
+
+        function memAction(a) {
+    if (isOff) return;
+    let v = parseFloat(screen.value) || 0;
+    if (a === 'M+') memory += v;
+    if (a === 'M-') memory -= v;
+    if (a === 'MRC') screen.value = memory;
+
+    // Підсвітка індикатора
+    const memInd = document.getElementById('mem-indicator');
+    if (memory !== 0) {
+        memInd.style.color = "var(--acc)"; // Колір теми (синій/жовтий)
+        memInd.style.fontWeight = "bold";
+    } else {
+        memInd.style.color = "#888";
+        memInd.style.fontWeight = "normal";
+    }
+}
+
+        function setTheme(t) {
+            const r = document.documentElement.style;
+            if (t === 'default') { r.setProperty('--bg', '#222'); r.setProperty('--calc', '#333'); r.setProperty('--disp', '#eee'); r.setProperty('--text', '#000'); r.setProperty('--btn', '#eee'); r.setProperty('--acc', '#ff9500'); r.setProperty('--brd', 'none'); }
+            if (t === 'blue') { r.setProperty('--bg', '#000a12'); r.setProperty('--calc', '#001529'); r.setProperty('--disp', '#001f3f'); r.setProperty('--text', '#7FDBFF'); r.setProperty('--btn', '#001f3f'); r.setProperty('--acc', '#0074D9'); r.setProperty('--brd', '1px solid #0074D9'); }
+            if (t === 'matrix') { r.setProperty('--bg', '#000'); r.setProperty('--calc', '#050505'); r.setProperty('--disp', '#000'); r.setProperty('--text', '#0f0'); r.setProperty('--btn', '#000'); r.setProperty('--acc', '#0f0'); r.setProperty('--brd', '1px solid #0f0'); }
+            if (t === 'retro') { r.setProperty('--bg', '#a0a0a0'); r.setProperty('--calc', '#c0c0c0'); r.setProperty('--disp', '#808000'); r.setProperty('--text', '#000'); r.setProperty('--btn', '#c0c0c0'); r.setProperty('--acc', '#888'); r.setProperty('--brd', '3px outset #fff'); }
+            if (t === 'yellow') { r.setProperty('--bg', '#222'); r.setProperty('--calc', '#333'); r.setProperty('--disp', '#eee'); r.setProperty('--text', '#000'); r.setProperty('--btn', '#eee'); r.setProperty('--acc', '#ff9500'); r.setProperty('--brd', '2px solid #FFDC00'); }
+        }
+
+        function resetAllModes() { isGameMode = false; screen.value = "ALL OFF"; setTimeout(() => screen.value = "0", 1000); }
+        function scientific(t) { let v = parseFloat(screen.value); if (t === 'sqrt') screen.value = Math.sqrt(v); if (t === 'pow') screen.value = Math.pow(v, 2); }
+        function memAction(a) { let v = parseFloat(screen.value) || 0; if (a === 'M+') memory += v; if (a === 'MRC') screen.value = memory; }
+    </script>
+</body>
+
+</html>
